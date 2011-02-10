@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!--  YOU MUST RENAME THIS FILE TO oauth_keys_private.xml FOR THE APP TO COMPILE
+			YOU MUST ALSO PROVIDE YOUR OWN KEYS -->
+    <string name="oauth_consumer_key_REMOVEME">@null</string>
+    <string name="oauth_consumer_secret_REMOVEME">@null</string>
+</resources>
