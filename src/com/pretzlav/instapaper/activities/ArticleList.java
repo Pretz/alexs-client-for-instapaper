@@ -1,13 +1,12 @@
-package com.pretzlav.instapaper;
+package com.pretzlav.instapaper.activities;
 
-import android.app.Activity;
+import android.app.ListActivity;
 import android.os.Bundle;
 
-public class ArticleList extends Activity {
+public class ArticleList extends ListActivity {
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
     }
 }
