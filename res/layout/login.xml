@@ -21,6 +21,7 @@
 		android:layout_height="wrap_content"
 		android:layout_marginTop="10dp"
 		android:id="@+id/login"
+		android:inputType="textEmailAddress"
 		android:hint="login e.g. marco@marco.org"
 		android:singleLine="true"
 		android:layout_width="fill_parent" />
@@ -29,6 +30,7 @@
 		android:id="@+id/password"
 		android:hint="password e.g. IheartBunn1ez"
 		android:password="true"
+		android:inputType="textPassword"
 		android:singleLine="true"
 		android:layout_width="fill_parent" />
 	<Button
