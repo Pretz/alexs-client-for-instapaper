@@ -17,7 +17,11 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".activities.ArticleList" />
+        <activity android:name=".activities.ArticleList"
+        	android:configChanges="touchscreen|keyboard|keyboardHidden|navigation|orientation" />
+        
+        <activity android:name=".activities.ArticleViewer"
+        	android:configChanges="touchscreen|keyboard|keyboardHidden|navigation|orientation" />
 
     </application>
 </manifest>
