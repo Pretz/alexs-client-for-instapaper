@@ -16,15 +16,20 @@ import com.pretzlav.instapaper.R;
 import com.pretzlav.instapaper.api.ApiRequest;
 import com.pretzlav.instapaper.application.InstaApper;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
 public class ArticleViewer extends Activity {
 	
 	public static final String EXTRA_BOOKMARK_ID = "bookmark_id";
+	public static final String EXTRA_BOOKMARK_HASH= "bookmark_hash";
 	
 	InstaActivityHelper mHelper;
 	WebView mWebView;
+	File mFile;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,7 +37,12 @@ public class ArticleViewer extends Activity {
         mHelper = new InstaActivityHelper(this);
         mWebView = new WebView(this);
         setContentView(mWebView);
-        refresh();
+        mFile = getFileForBookmark(getIntent().getIntExtra(EXTRA_BOOKMARK_ID, 0), getIntent().getStringExtra(EXTRA_BOOKMARK_HASH));
+        if (mFile.exists()) {
+        	setHtmlContent(mFile);
+        } else {
+        	refresh();	
+        }
     }
 	
 	public Dialog onCreateDialog(int id) {
@@ -48,6 +58,10 @@ public class ArticleViewer extends Activity {
 	void setHtmlContent(String content) {
 		mWebView.loadData(content, "text/html", "utf-8");
 		dismissDialog(InstaActivityHelper.DIALOG);
+	}
+	
+	void setHtmlContent(File file) {
+		mWebView.loadUrl(file.toURI().toString());
 	}
 	
 	void onError() {
@@ -73,6 +87,16 @@ public class ArticleViewer extends Activity {
 		return false;
 	}
 	
+	public File getFileForBookmark(int bookmarkId, String hash) {
+		File cacheFile = new File(((InstaApper)getApplication()).getPageCacheDir(), Integer.toString(bookmarkId));
+		cacheFile.mkdirs();
+		return new File(cacheFile, hash);
+	}
+	
+	public File getBookmarkFile() {
+		return mFile;
+	}
+	
 	void archive() {
 		showDialog(InstaActivityHelper.DIALOG);
 		ArchiveHtmlRequest request = new ArchiveHtmlRequest(this);
@@ -95,7 +119,7 @@ public class ArticleViewer extends Activity {
 			mRequest = new ApiRequest(
 					"http://www.instapaper.com/api/1/bookmarks/archive",
 					params, (InstaApper) mActivity.getApplication());
-			return mRequest.execute();
+			return mRequest.executeAndRead();
 		}
 		
 		@Override
@@ -111,7 +135,7 @@ public class ArticleViewer extends Activity {
 		}
 	}
 	
-	private static class BookmarkHtmlRequest extends AsyncTask<Integer, Void, String> {
+	private static class BookmarkHtmlRequest extends AsyncTask<Integer, Void, File> {
 
 		private ArticleViewer mActivity;
 		private ApiRequest mRequest;
@@ -125,20 +149,29 @@ public class ArticleViewer extends Activity {
 //		}
 		
 		@Override
-		protected String doInBackground(Integer... bookmarkId) {
+		protected File doInBackground(Integer... bookmarkId) {
 			List<BasicNameValuePair> params = Arrays
 					.asList(new BasicNameValuePair("bookmark_id", Integer
 							.toString(bookmarkId[0])));
+			InstaApper app = (InstaApper) mActivity.getApplication();
 			mRequest = new ApiRequest(
 					"http://www.instapaper.com/api/1/bookmarks/get_text",
-					params, (InstaApper) mActivity.getApplication());
-			return mRequest.execute();
+					params, app);
+			InputStream response = mRequest.execute();
+			File cacheFile = mActivity.getBookmarkFile();
+			try {
+				ApiRequest.readResponseToFile(response, cacheFile);
+			} catch (FileNotFoundException e) {
+				return null;
+			}
+			return cacheFile;
 		}
 		
 		@Override
-		public void onPostExecute(String body) {
-			if (!TextUtils.isEmpty(body)) {
-				mActivity.setHtmlContent(body);
+		public void onPostExecute(File location) {
+			if (location != null && location.exists()) {
+				mActivity.setHtmlContent(location);
+				mActivity.dismissDialog(InstaActivityHelper.DIALOG);
 			} else {
 				mActivity.onError();
 			}

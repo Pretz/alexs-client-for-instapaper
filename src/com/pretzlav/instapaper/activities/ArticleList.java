@@ -131,8 +131,10 @@ public class ArticleList extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		Intent intent = new Intent(this, ArticleViewer.class);
+		JSONObject bookmark = mBookmarks.get(position);
 		intent.putExtra(ArticleViewer.EXTRA_BOOKMARK_ID, 
-				mBookmarks.get(position).optInt("bookmark_id"));
+				bookmark.optInt("bookmark_id"));
+		intent.putExtra(ArticleViewer.EXTRA_BOOKMARK_HASH, bookmark.optString("hash"));
 		startActivityForResult(intent, ACTIVITY_VIEWER);
 	}
 	
@@ -181,7 +183,7 @@ public class ArticleList extends ListActivity {
 							.toString(count[0])));
 			mRequest = new ApiRequest("http://www.instapaper.com/api/1/bookmarks/list", params,
 					(InstaApper) mActivity.getApplication());
-			String response = mRequest.execute();
+			String response = mRequest.executeAndRead();
 			if (!TextUtils.isEmpty(response)) {
 				try {
 					return new JSONArray(response);

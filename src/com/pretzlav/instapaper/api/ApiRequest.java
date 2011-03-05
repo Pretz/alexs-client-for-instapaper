@@ -20,6 +20,10 @@ import com.pretzlav.android.net.http.AndroidHttpClient;
 import com.pretzlav.instapaper.R;
 import com.pretzlav.instapaper.application.InstaApper;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -63,7 +67,7 @@ public class ApiRequest {
 		return mResponse;
 	}
 	
-	public String execute() {
+	public InputStream execute() {
 		HttpPost request = new HttpPost(mUrl);
 		UrlEncodedFormEntity entity = null;
 		try {
@@ -96,15 +100,24 @@ public class ApiRequest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (data == null) {
+		return data;
+	}
+	
+	public String executeAndRead() {
+		InputStream data = execute();
+		if (data != null) {
+			return readResponseToString(data);
+		} else {
 			return null;
 		}
-
+	}
+	
+	public static String readResponseToString(InputStream response) {
 		String responseString = null;
 		try {
 			final char[] buffer = new char[0x10000];
 			StringBuilder out = new StringBuilder();
-			Reader in = new InputStreamReader(data, HTTP.UTF_8);
+			Reader in = new InputStreamReader(response, HTTP.UTF_8);
 			int read;
 			do {
 				read = in.read(buffer, 0, buffer.length);
@@ -118,5 +131,23 @@ public class ApiRequest {
 			throw new IllegalStateException("Error while reading response body", ioe);
 		}
 		return responseString;
+	}
+	
+	public static void readResponseToFile(InputStream response, File target) throws FileNotFoundException {
+		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(target));
+		try {
+			final byte[] buffer = new byte[0x10000];
+			int read;
+			do {
+				read = response.read(buffer, 0, buffer.length);
+				if (read > 0) {
+					out.write(buffer, 0, read);
+				}
+			} while (read >= 0);
+			response.close();
+			out.close();
+		} catch (IOException ioe) {
+			throw new IllegalStateException("Error while reading response body", ioe);
+		}
 	}
 }

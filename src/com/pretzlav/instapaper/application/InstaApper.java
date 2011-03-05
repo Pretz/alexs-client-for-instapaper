@@ -7,6 +7,8 @@ import org.apache.http.client.HttpClient;
 
 import com.pretzlav.android.net.http.AndroidHttpClient;
 
+import java.io.File;
+
 public class InstaApper extends Application {
 
 	private static final String USERAGENT = "alexs-client-for-instapaper";
@@ -54,5 +56,13 @@ public class InstaApper extends Application {
 	public void saveOAuthTokenSecret(String secret) {
 		getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit().putString(KEY_SECRET, secret).commit();
 		mOAuthTokenSecret = secret;
+	}
+	
+	public File getPageCacheDir() {
+		File cacheDir = new File(getCacheDir(), "articles");
+		if (!cacheDir.exists()) {
+			cacheDir.mkdirs();
+		}
+		return cacheDir;
 	}
 }

@@ -103,7 +103,7 @@ public class Login extends Activity {
 					new BasicNameValuePair("x_auth_mode", "client_auth"));
 			 mRequest = new ApiRequest("https://www.instapaper.com/api/1/oauth/access_token",
 						params, (InstaApper)mActivity.getApplication());
-			String responseString = mRequest.execute();
+			String responseString = mRequest.executeAndRead();
 		    
 		    return TextUtils.split(responseString, "&");
 		}
